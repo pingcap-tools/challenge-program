@@ -1,0 +1,23 @@
+host = "127.0.0.1"
+port = 8080
+season = 1
+org = "tidb-perf-challenge"
+github = ""
+webhook-secret = ""
+repos = ["pingcap/tidb"]
+
+[database]
+host = "127.0.0.1"
+port = 3306
+username = "root"
+password = ""
+database = "community"
+
+[[projects]]
+repo = "pingcap/tidb"
+project_id = 0
+easy_column_id = 0
+medium_column_id = 0
+hard_column_id = 0
+in_progress_column_id = 0
+finished_column_id = 0
