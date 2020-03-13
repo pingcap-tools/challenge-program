@@ -266,7 +266,7 @@ func (mgr *Manager) mayNotChallengeIssue(repo *types.Repo, issue *github.Issue, 
 		}
 	}
 	if !hasChallengeLabel {
-		comment = fmt.Sprintf("@%s this is not a performance challenge issue.", login)
+		comment = fmt.Sprintf("@%s this is not a challenge issue.", login)
 	} else {
 		comment = fmt.Sprintf("@%s sorry for this accident, we will fix it ASAP.\n@you06 something wrong with this challenge issue, PTAL.", login)
 	}
