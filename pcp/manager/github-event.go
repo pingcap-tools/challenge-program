@@ -2,10 +2,10 @@ package manager
 
 import (
 	"github.com/google/go-github/github"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
-func (mgr *Manager)Webhook(repo *types.Repo, event interface{}) {
+func (mgr *Manager) Webhook(repo *types.Repo, event interface{}) {
 	switch event := event.(type) {
 	case *github.PullRequestEvent:
 		mgr.processPull(repo, event)

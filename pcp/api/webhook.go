@@ -9,7 +9,7 @@ import (
 	"github.com/juju/errors"
 	"github.com/kataras/iris"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 // HookBody for parsing webhook

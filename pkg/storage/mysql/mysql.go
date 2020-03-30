@@ -3,8 +3,8 @@ package mysql
 import (
 	"fmt"
 
-	"github.com/pingcap/community/config"
-	"github.com/pingcap/community/pkg/storage/basic"
+	"github.com/pingcap/challenge-program/config"
+	"github.com/pingcap/challenge-program/pkg/storage/basic"
 
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/mysql"

@@ -1,14 +1,15 @@
 package syncer
 
 import (
+	"time"
+
 	"github.com/google/go-github/github"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 	"github.com/pingcap/errors"
-	"time"
 )
 
-func (s *Syncer)StartPolling() {
+func (s *Syncer) StartPolling() {
 	for _, repo := range s.repos {
 		// time.Sleep(time.Duration(time.Duration(300))*time.Second)
 		log.Infof("start polling %s/%s", repo.GetOwner(), repo.GetRepo())
@@ -18,27 +19,28 @@ func (s *Syncer)StartPolling() {
 	}
 }
 
-func (s *Syncer)polling(repo *types.Repo, pullCh chan *github.PullRequest) {
+func (s *Syncer) polling(repo *types.Repo, pullCh chan *github.PullRequest) {
 	ch := make(chan []*github.PullRequest)
 	go s.mgr.FetchPullsBatch(repo.Owner, repo.Repo, 1, &ch)
 	for pulls := range ch {
 		for _, pull := range pulls {
-			if err := s.mgr.CreatePullNoLock(repo, pull); err != nil {}
+			if err := s.mgr.CreatePullNoLock(repo, pull); err != nil {
+			}
 			// pullCh <- pull
 		}
 	}
 	log.Infof("%s/%s history pulls done", repo.GetOwner(), repo.GetRepo())
-	ticker := time.NewTicker(10*time.Minute)
+	ticker := time.NewTicker(10 * time.Minute)
 	for {
 		select {
-		case <- ticker.C:
+		case <-ticker.C:
 			// should not be asynchronous
 			s.fetchUpdates(repo, pullCh)
 		}
 	}
 }
 
-func (s *Syncer)fetchUpdates(repo *types.Repo, pullCh chan *github.PullRequest) {
+func (s *Syncer) fetchUpdates(repo *types.Repo, pullCh chan *github.PullRequest) {
 	page := 1
 	finish := false
 	for {

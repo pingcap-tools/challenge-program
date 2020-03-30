@@ -2,20 +2,23 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
 
 	"github.com/juju/errors"
+	"github.com/kataras/iris"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/config"
-	"github.com/pingcap/community/manager"
-	"github.com/pingcap/community/syncer"
+	"github.com/pingcap/challenge-program/config"
+	"github.com/pingcap/challenge-program/manager"
+	"github.com/pingcap/challenge-program/pcp/api"
+	"github.com/pingcap/challenge-program/syncer"
 )
 
 var (
-	cfg          *config.Config
-	configPath   string
+	cfg        *config.Config
+	configPath string
 )
 
 func init() {
@@ -41,14 +44,14 @@ func main() {
 		log.Fatalf("can't run syncer: %v", errors.ErrorStack(err))
 	}
 
-	//go func() {
-	//	log.Infof("begin to listen %s:%d 😄", cfg.Host, cfg.Port)
-	//	app := iris.New()
-	//	api.CreateRouter(app, mgr)
-	//	if err := app.Run(iris.Addr(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))); err != nil {
-	//		log.Fatalf("app run error %v", err)
-	//	}
-	//}()
+	go func() {
+		log.Infof("begin to listen %s:%d 😄", cfg.Host, cfg.Port)
+		app := iris.New()
+		api.CreateRouter(app, mgr)
+		if err := app.Run(iris.Addr(fmt.Sprintf("%s:%d", cfg.Host, cfg.Port))); err != nil {
+			log.Fatalf("app run error %v", err)
+		}
+	}()
 
 	syc, err := syncer.New(cfg, mgr)
 	if err != nil {

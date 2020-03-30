@@ -12,7 +12,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 const (
@@ -65,7 +65,7 @@ func (mgr *Manager) GetAllRank(season int) ([]*types.RankItem, error) {
 			} else {
 				// team
 				team := mgr.getTeamByID(pick.TeamID)
-				if rank.Name == team.Name && rank.Season == team.Season {
+				if rank.Name == team.Name {
 					hasRank = true
 					rank.Score = rank.Score + pick.Score
 					rank.LastUpdate = maxTime(rank.LastUpdate, pick.ClosedAt)

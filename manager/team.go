@@ -3,7 +3,7 @@ package manager
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/juju/errors"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 func (mgr *Manager) GetTeamByUser(login string, season int) (*types.Team, error) {

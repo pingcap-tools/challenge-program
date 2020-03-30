@@ -5,10 +5,10 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/juju/errors"
-	"github.com/pingcap/community/config"
-	githubInit "github.com/pingcap/community/pkg/github"
-	"github.com/pingcap/community/pkg/storage"
-	"github.com/pingcap/community/pkg/storage/basic"
+	"github.com/pingcap/challenge-program/config"
+	githubInit "github.com/pingcap/challenge-program/pkg/github"
+	"github.com/pingcap/challenge-program/pkg/storage"
+	"github.com/pingcap/challenge-program/pkg/storage/basic"
 )
 
 // Manager represent schrodinger syncer

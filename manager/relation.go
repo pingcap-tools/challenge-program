@@ -2,15 +2,16 @@ package manager
 
 import (
 	"context"
+
 	"github.com/juju/errors"
-	"github.com/pingcap/community/util"
+	"github.com/pingcap/challenge-program/util"
 )
 
 var (
 	reviewers = []string{"niedhui", "TennyZhuang"}
 )
 
-func (mgr *Manager)isMember(login string) (bool, error) {
+func (mgr *Manager) isMember(login string) (bool, error) {
 	for _, r := range reviewers {
 		if r == login {
 			return false, nil
@@ -55,6 +56,6 @@ func (mgr *Manager)isMember(login string) (bool, error) {
 	return false, nil
 }
 
-func (mgr *Manager)IsMember(login string) (bool, error) {
+func (mgr *Manager) IsMember(login string) (bool, error) {
 	return mgr.isMember(login)
 }

@@ -6,7 +6,7 @@ import (
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 const (
@@ -41,7 +41,8 @@ func (mgr *Manager) GetCombinedRepoScore(repo *types.Repo, login string) (int, e
 		return mgr.GetRepoScore(repo, login)
 	}
 	if repo.GetOwner() == "pingcap-incubator" && repo.GetRepo() == "cherry-bot" {
-		return mgr.GetRepoScore(repo, login)
+		// return mgr.GetRepoScore(repo, login)
+		return 0, nil
 	}
 	if repo.GetOwner() == "tikv" {
 		return mgr.GetOrgScore("tikv", login)

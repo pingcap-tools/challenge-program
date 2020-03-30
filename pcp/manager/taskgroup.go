@@ -5,7 +5,7 @@ import (
 	"sort"
 
 	"github.com/juju/errors"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 func (mgr *Manager) GetMockTaskgroups(season int) []types.Taskgroup {

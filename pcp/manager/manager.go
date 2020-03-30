@@ -1,8 +1,8 @@
 package manager
 
 import (
-	"github.com/pingcap/community/config"
-	"github.com/pingcap/community/manager"
+	"github.com/pingcap/challenge-program/config"
+	"github.com/pingcap/challenge-program/manager"
 )
 
 type Manager struct {

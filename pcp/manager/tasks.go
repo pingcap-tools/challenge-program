@@ -1,6 +1,6 @@
 package manager
 
-import "github.com/pingcap/community/pkg/types"
+import "github.com/pingcap/challenge-program/pkg/types"
 
 func (mgr *Manager) GetMockTasksAll(season int) []types.Task {
 	return append(mgr.GetMockTasksLevel(-1), mgr.GetMockTasksRepo(-1)...)

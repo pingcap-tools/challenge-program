@@ -4,7 +4,7 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 func (mgr *Manager) CreatePick(login string, task *types.Task) error {

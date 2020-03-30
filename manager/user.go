@@ -8,7 +8,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/jinzhu/gorm"
 	"github.com/juju/errors"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 	signUpTeamMemberRegex      = `^-\sTeam Member:\s@(.*)`
 	signUpTeamLeaderEmailRegex = `^-\sTeam Leader:\s@(.*)\((.*)\)`
 	signUpTeamMemberEmailRegex = `^-\sTeam Member:\s@(.*)\((.*)\)`
-	projectUrl                 = `https://github.com/pingcap/community/blob/master/challenge-programs/README-CN.md`
+	projectUrl                 = `https://github.com/pingcap/challenge-program/blob/master/challenge-programs/README-CN.md`
 	cannotInheriteComment      = `You can not use this team name.`
 )
 

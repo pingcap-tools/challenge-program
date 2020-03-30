@@ -2,7 +2,7 @@ package manager
 
 import (
 	"github.com/juju/errors"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 // season: -1: current season, 0: all season

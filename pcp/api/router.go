@@ -3,7 +3,7 @@ package api
 import (
 	"github.com/iris-contrib/middleware/cors"
 	"github.com/kataras/iris"
-	"github.com/pingcap/community/pcp/manager"
+	"github.com/pingcap/challenge-program/pcp/manager"
 )
 
 func CreateRouter(app *iris.Application, mgr *manager.Manager) {

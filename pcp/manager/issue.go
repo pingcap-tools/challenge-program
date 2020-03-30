@@ -8,7 +8,7 @@ import (
 
 	"github.com/google/go-github/github"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 	"github.com/pingcap/errors"
 )
 
@@ -110,7 +110,7 @@ func (mgr *Manager) tryPickUp(repo *types.Repo, issue *github.Issue, login strin
 		return errors.Trace(mgr.mgr.CommentIssue(repo.GetOwner(), repo.GetRepo(),
 			issue.GetNumber(), comment))
 	}
-	score, err := mgr.mgr.GetRepoScore(repo, login)
+	score, err := mgr.mgr.GetCombinedRepoScore(repo, login)
 	if err != nil {
 		return errors.Trace(err)
 	}

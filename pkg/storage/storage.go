@@ -1,9 +1,9 @@
 package storage
 
 import (
-	"github.com/pingcap/community/config"
-	"github.com/pingcap/community/pkg/storage/basic"
-	"github.com/pingcap/community/pkg/storage/mysql"
+	"github.com/pingcap/challenge-program/config"
+	"github.com/pingcap/challenge-program/pkg/storage/basic"
+	"github.com/pingcap/challenge-program/pkg/storage/mysql"
 
 	"github.com/juju/errors"
 )

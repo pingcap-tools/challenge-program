@@ -2,7 +2,7 @@ package api
 
 import (
 	"github.com/kataras/iris"
-	"github.com/pingcap/community/pcp/manager"
+	"github.com/pingcap/challenge-program/pcp/manager"
 )
 
 // ManagerHandler is manager api handler
@@ -16,6 +16,6 @@ func newManagerHandler(mgr *manager.Manager) *ManagerHandler {
 	}
 }
 
-func (hdl *ManagerHandler)Ping(ctx iris.Context) {
+func (hdl *ManagerHandler) Ping(ctx iris.Context) {
 	ctx.WriteString("pong")
 }

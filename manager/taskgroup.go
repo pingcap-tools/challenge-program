@@ -3,7 +3,7 @@ package manager
 import (
 	"github.com/jinzhu/gorm"
 	"github.com/juju/errors"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 func (mgr *Manager) GetTaskgroupsBySeason(season int) ([]*types.Taskgroup, error) {

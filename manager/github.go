@@ -7,8 +7,8 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/config"
-	"github.com/pingcap/community/util"
+	"github.com/pingcap/challenge-program/config"
+	"github.com/pingcap/challenge-program/util"
 )
 
 const (

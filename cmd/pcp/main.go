@@ -10,15 +10,15 @@ import (
 
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/config"
-	"github.com/pingcap/community/manager"
-	"github.com/pingcap/community/pcp/api"
-	pcpManager "github.com/pingcap/community/pcp/manager"
+	"github.com/pingcap/challenge-program/config"
+	"github.com/pingcap/challenge-program/manager"
+	"github.com/pingcap/challenge-program/pcp/api"
+	pcpManager "github.com/pingcap/challenge-program/pcp/manager"
 )
 
 var (
-	cfg          *config.Config
-	configPath   string
+	cfg        *config.Config
+	configPath string
 )
 
 func init() {

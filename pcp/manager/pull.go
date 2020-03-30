@@ -10,7 +10,7 @@ import (
 	"github.com/google/go-github/github"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 const (

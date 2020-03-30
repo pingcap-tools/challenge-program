@@ -1,16 +1,17 @@
 package syncer
 
 import (
+	"time"
+
 	"github.com/google/go-github/github"
 	"github.com/juju/errors"
 	"github.com/ngaut/log"
-	"github.com/pingcap/community/pkg/types"
-	"time"
+	"github.com/pingcap/challenge-program/pkg/types"
 )
 
 const perPage = 100
 
-func (s *Syncer)pollingComment(repo *types.Repo, ch chan *github.PullRequest) {
+func (s *Syncer) pollingComment(repo *types.Repo, ch chan *github.PullRequest) {
 
 	for pull := range ch {
 		issueComments, _, err := s.fetchIssueComments(repo.GetOwner(), repo.GetRepo(), pull.GetNumber())
@@ -26,9 +27,9 @@ func (s *Syncer)pollingComment(repo *types.Repo, ch chan *github.PullRequest) {
 		for _, issueComment := range issueComments {
 			patch, err := s.mgr.MakeCommentPatch(repo, issueComment, &types.CommentAttach{
 				CommentType: "common comment",
-				Number: pull.GetNumber(),
-				CreatedAt: issueComment.GetCreatedAt(),
-				UpdatedAt: issueComment.GetUpdatedAt(),
+				Number:      pull.GetNumber(),
+				CreatedAt:   issueComment.GetCreatedAt(),
+				UpdatedAt:   issueComment.GetUpdatedAt(),
 				Association: issueComment.GetAuthorAssociation(),
 			})
 			if err != nil {
@@ -45,9 +46,9 @@ func (s *Syncer)pollingComment(repo *types.Repo, ch chan *github.PullRequest) {
 		for _, pullComment := range pullComments {
 			patch, err := s.mgr.MakeCommentPatch(repo, pullComment, &types.CommentAttach{
 				CommentType: "review comment",
-				Number: pull.GetNumber(),
-				CreatedAt: pullComment.GetCreatedAt(),
-				UpdatedAt: pullComment.GetUpdatedAt(),
+				Number:      pull.GetNumber(),
+				CreatedAt:   pullComment.GetCreatedAt(),
+				UpdatedAt:   pullComment.GetUpdatedAt(),
 				Association: pullComment.GetAuthorAssociation(),
 			})
 			if err != nil {
@@ -64,9 +65,9 @@ func (s *Syncer)pollingComment(repo *types.Repo, ch chan *github.PullRequest) {
 		for _, pullReview := range pullReviews {
 			patch, err := s.mgr.MakeCommentPatch(repo, pullReview, &types.CommentAttach{
 				CommentType: "review",
-				Number: pull.GetNumber(),
-				CreatedAt: pullReview.GetSubmittedAt(),
-				UpdatedAt: pullReview.GetSubmittedAt(),
+				Number:      pull.GetNumber(),
+				CreatedAt:   pullReview.GetSubmittedAt(),
+				UpdatedAt:   pullReview.GetSubmittedAt(),
 				Association: "",
 			})
 			if err != nil {
@@ -86,7 +87,7 @@ func (s *Syncer)pollingComment(repo *types.Repo, ch chan *github.PullRequest) {
 	}
 }
 
-func (s *Syncer)fetchIssueComments(owner, repo string, issueNumber int) ([]*github.IssueComment, bool, error) {
+func (s *Syncer) fetchIssueComments(owner, repo string, issueNumber int) ([]*github.IssueComment, bool, error) {
 	finish := false
 	page := 1
 	rateSafe := true
@@ -107,7 +108,7 @@ func (s *Syncer)fetchIssueComments(owner, repo string, issueNumber int) ([]*gith
 		if len(comments) < perPage {
 			finish = true
 		} else {
-			comment := comments[len(comments) - 1]
+			comment := comments[len(comments)-1]
 			c, err := s.mgr.GetCommentByID(comment.GetID())
 			if err != nil {
 				return []*github.IssueComment{}, rateSafe, errors.Trace(err)
@@ -123,7 +124,7 @@ func (s *Syncer)fetchIssueComments(owner, repo string, issueNumber int) ([]*gith
 	return r, rateSafe, nil
 }
 
-func (s *Syncer)fetchPullComments(owner, repo string, pullNumber int) ([]*github.PullRequestComment, bool, error) {
+func (s *Syncer) fetchPullComments(owner, repo string, pullNumber int) ([]*github.PullRequestComment, bool, error) {
 	finish := false
 	page := 1
 	rateSafe := true
@@ -144,7 +145,7 @@ func (s *Syncer)fetchPullComments(owner, repo string, pullNumber int) ([]*github
 		if len(comments) < perPage {
 			finish = true
 		} else {
-			comment := comments[len(comments) - 1]
+			comment := comments[len(comments)-1]
 			c, err := s.mgr.GetCommentByID(comment.GetID())
 			if err != nil {
 				return []*github.PullRequestComment{}, rateSafe, errors.Trace(err)
@@ -160,7 +161,7 @@ func (s *Syncer)fetchPullComments(owner, repo string, pullNumber int) ([]*github
 	return r, rateSafe, nil
 }
 
-func (s *Syncer)fetchPullReviews(owner, repo string, pullNumber int) ([]*github.PullRequestReview, bool, error) {
+func (s *Syncer) fetchPullReviews(owner, repo string, pullNumber int) ([]*github.PullRequestReview, bool, error) {
 	finish := false
 	page := 1
 	rateSafe := true
