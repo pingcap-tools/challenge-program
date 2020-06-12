@@ -457,13 +457,13 @@ func (mgr *Manager) CreateTask(owner, repo string, issue *github.Issue) error {
 	// 		return errors.Trace(mgr.CommentIssue(owner, repo, issue.GetNumber(), tikvReqComment))
 	// 	}
 	// }
-	isMember, err := mgr.isMember(issue.GetUser().GetLogin())
-	if err != nil {
-		return errors.Trace(err)
-	}
-	if !isMember {
-		return nil
-	}
+	// isMember, err := mgr.isMember(issue.GetUser().GetLogin())
+	// if err != nil {
+	// 	return errors.Trace(err)
+	// }
+	// if !isMember {
+	// 	return nil
+	// }
 	task, err := mgr.GetTaskByNumber(owner, repo, issue.GetNumber(), mgr.Config.Season)
 	if err != nil {
 		return errors.Trace(err)
@@ -482,12 +482,51 @@ func (mgr *Manager) CreateTask(owner, repo string, issue *github.Issue) error {
 	task.CreatedAt = issue.GetCreatedAt()
 	task.Expired = ""
 
+	oldScore := task.Score
 	if !parseIssue(task, issue) {
-		log.Infof("Issue parse failed %d", issue.GetNumber())
-		return nil
+		if owner != "tidb-challenge-program" || repo != "bug-hunting-issue" {
+			log.Infof("Issue parse failed %d", issue.GetNumber())
+			return nil
+		}
+
+		hasChallengeLabel := false
+		for _, l := range issue.Labels {
+			if l.GetName() == "challenge-program-2" {
+				hasChallengeLabel = true
+			}
+		}
+
+		if !hasChallengeLabel {
+			return nil
+		}
 	}
+	log.Infof("create task %s/%s#%d", owner, repo, issue.GetNumber())
 	if err := mgr.UpdateTask(task); err != nil {
 		return errors.Trace(err)
+	}
+	if owner == "tidb-challenge-program" && repo == "bug-hunting-issue" {
+		// update score for picks
+		if task.ID != 0 && task.Score != 0 && task.Score != oldScore {
+			picks, err := mgr.GetPicksByTasks([]int{task.ID})
+			if err != nil {
+				return errors.Trace(err)
+			}
+			for _, pick := range picks {
+				if pick.Status == "failed" {
+					continue
+				}
+				if pick.Score == 0 {
+					pick.Score = task.Score
+					if err := mgr.UpdatePick(pick); err != nil {
+						return errors.Trace(err)
+					}
+				}
+			}
+			if err := mgr.CommentIssue(owner, repo, issue.GetNumber(),
+				fmt.Sprintf("This issue will be awarded %d points.", task.Score)); err != nil {
+				return errors.Trace(err)
+			}
+		}
 	}
 	// if err := mgr.CreateProjectCard(task.GetLevel(), issue.GetHTMLURL()); err != nil {
 	// 	log.Errorf("create project card failed, %v", errors.ErrorStack(err))

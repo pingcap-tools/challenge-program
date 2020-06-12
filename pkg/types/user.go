@@ -1,16 +1,19 @@
 package types
 
+import "time"
+
 type User struct {
-	ID       int    `gorm:"column:id"`
-	Season   int    `gorm:"column:season" json:"-"`
-	User     string `gorm:"column:user" json:"user"`
-	Email    string `gorm:"column:email" json:"-"`
-	TeamID   int    `gorm:"column:team_id" json:"-"`
-	IssueURL string `gorm:"column:issue_url" json:"-"`
-	Status   string `gorm:"column:status" json:"-"`
-	Avatar   string `gorm:"-" json:"avatar"`
-	GitHub   string `gorm:"-" json:"github"`
-	Leader   bool   `gorm:"column:leader" json:"leader"`
+	ID        int       `gorm:"column:id"`
+	Season    int       `gorm:"column:season" json:"-"`
+	User      string    `gorm:"column:user" json:"user"`
+	Email     string    `gorm:"column:email" json:"-"`
+	TeamID    int       `gorm:"column:team_id" json:"-"`
+	IssueURL  string    `gorm:"column:issue_url" json:"-"`
+	Status    string    `gorm:"column:status" json:"-"`
+	Avatar    string    `gorm:"-" json:"avatar"`
+	GitHub    string    `gorm:"-" json:"github"`
+	Leader    bool      `gorm:"column:leader" json:"leader"`
+	CreteadAt time.Time `gorm:"column:created_at" json:"-"`
 }
 
 func (u *User) GetID() int {

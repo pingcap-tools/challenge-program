@@ -20,9 +20,11 @@ func New(mgr *manager.Manager) *Manager {
 	//		}
 	//	}
 	//}(mgr)
-	return &Manager{
+	m := &Manager{
 		mgr: mgr,
 	}
+	go m.watchExpiredPick()
+	return m
 }
 
 func (mgr *Manager) GetConfig() *config.Config {

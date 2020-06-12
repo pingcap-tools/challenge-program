@@ -52,6 +52,36 @@ func (mgr *Manager) HasDoingPick(login string) (*types.Pick, error) {
 	return pick, nil
 }
 
+func (mgr *Manager) DoingPickOverLimit(login string) (bool, []*types.Pick, error) {
+	var (
+		team      *types.Team
+		picks     []*types.Pick
+		overLimit = false
+		err       error
+	)
+	team, err = mgr.GetTeamByUser(login, mgr.Config.Season)
+	if err != nil {
+		return false, picks, errors.Trace(err)
+	}
+	if team == nil {
+		picks, err = mgr.GetDoingPicksByLogin(login)
+		if len(picks) >= 1 {
+			overLimit = true
+		}
+	} else {
+		picks, err = mgr.GetDoingPicksByTeam(team)
+		if len(picks) >= len(team.Users) {
+			overLimit = true
+		}
+	}
+
+	if err != nil {
+		return false, picks, errors.Trace(err)
+	}
+
+	return overLimit, picks, nil
+}
+
 func (mgr *Manager) GetPickByLogin(login, status string) (*types.Pick, error) {
 	pick := types.Pick{}
 	if err := mgr.storage.FindOne(&pick, "season=? AND status=? AND user=?",
@@ -63,6 +93,19 @@ func (mgr *Manager) GetPickByLogin(login, status string) (*types.Pick, error) {
 		}
 	}
 	return &pick, nil
+}
+
+func (mgr *Manager) GetDoingPicksByLogin(login string) ([]*types.Pick, error) {
+	var picks []*types.Pick
+	if err := mgr.storage.Find(&picks, "season=? AND user=? AND status=?",
+		mgr.Config.Season, login, "doing"); err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return []*types.Pick{}, nil
+		} else {
+			return []*types.Pick{}, errors.Trace(err)
+		}
+	}
+	return picks, nil
 }
 
 func (mgr *Manager) GetPicks(season int) ([]*types.Pick, error) {
@@ -151,10 +194,49 @@ func (mgr *Manager) GetPickByTeam(team *types.Team, status string) (*types.Pick,
 	return &pick, nil
 }
 
+func (mgr *Manager) GetDoingPickByTask(task *types.Task) (*types.Pick, error) {
+	pick := types.Pick{}
+	if err := mgr.storage.FindOne(&pick, "season=? AND status=? AND task_id=?",
+		mgr.Config.Season, "doing", task.GetID()); err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return nil, nil
+		} else {
+			return nil, errors.Trace(err)
+		}
+	}
+	return &pick, nil
+}
+
 func (mgr *Manager) GetPicksByTeam(team *types.Team) ([]*types.Pick, error) {
 	var picks []*types.Pick
 	if err := mgr.storage.Find(&picks, "season=? AND teamID=?",
 		mgr.Config.Season, team.GetID()); err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return []*types.Pick{}, nil
+		} else {
+			return []*types.Pick{}, errors.Trace(err)
+		}
+	}
+	return picks, nil
+}
+
+func (mgr *Manager) GetDoingPicks() ([]*types.Pick, error) {
+	var picks []*types.Pick
+	if err := mgr.storage.Find(&picks, "season=? AND status=?",
+		mgr.Config.Season, "doing"); err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return []*types.Pick{}, nil
+		} else {
+			return []*types.Pick{}, errors.Trace(err)
+		}
+	}
+	return picks, nil
+}
+
+func (mgr *Manager) GetDoingPicksByTeam(team *types.Team) ([]*types.Pick, error) {
+	var picks []*types.Pick
+	if err := mgr.storage.Find(&picks, "season=? AND teamID=? AND status=?",
+		mgr.Config.Season, team.GetID(), "doing"); err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return []*types.Pick{}, nil
 		} else {

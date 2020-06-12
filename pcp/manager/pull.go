@@ -16,6 +16,7 @@ import (
 const (
 	issueNumberRegex         = `ucp:? ?#(\d+)`
 	issueNumberWithURLRegex  = `ucp:? ?https:\/\/github\.com\/[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+\/issues\/(\d+)`
+	issueNumberWithRepoRegex = `ucp:? ?\[#\d+\].*?.*\/(.*)\/(.*)\/issues\/(.*)\)`
 	successOpenedPullComment = "Thanks for your contribution. If your PR get merged, you will be rewarded %d points."
 	easyTheshould            = 200
 	vectorTaskScore          = 50
@@ -24,16 +25,21 @@ const (
 )
 
 var (
-	tidbVectorIssue           = []int{12101, 12102, 12103, 12104, 12105, 12106, 12176, 12058}
-	tikvVectorIssue           = []int{5751}
-	testVectorIssue           = []int{63}
-	issueNumberPattern        = regexp.MustCompile(issueNumberRegex)
-	issueNumberWithURLPattern = regexp.MustCompile(issueNumberWithURLRegex)
+	tidbVectorIssue            = []int{12101, 12102, 12103, 12104, 12105, 12106, 12176, 12058}
+	tikvVectorIssue            = []int{5751}
+	testVectorIssue            = []int{63}
+	issueNumberPattern         = regexp.MustCompile(issueNumberRegex)
+	issueNumberWithURLPattern  = regexp.MustCompile(issueNumberWithURLRegex)
+	issueNumberWithRepoPattern = regexp.MustCompile(issueNumberWithRepoRegex)
 )
 
 func (mgr *Manager) processPull(repo *types.Repo, pullEvent *github.PullRequestEvent) {
+	if pullEvent.GetPullRequest().GetUser().GetLogin() == "sre-bot" {
+		return
+	}
 	switch pullEvent.GetAction() {
 	case "opened", "edited", "reopened":
+		return
 		mgr.createPull(repo, pullEvent.GetPullRequest())
 	case "closed":
 		mgr.closePull(repo, pullEvent.GetPullRequest())
@@ -79,7 +85,7 @@ func (mgr *Manager) createPull(repo *types.Repo, pull *github.PullRequest) {
 		}
 		return
 	}
-	if score, err := mgr.mgr.GetUserExpectedEasySeasonScore(pull.GetUser().GetLogin(), mgr.mgr.Config.Season); err != nil {
+	if score, err := mgr.mgr.GetCombinedRepoScore(repo, pull.GetUser().GetLogin()); err != nil {
 		log.Errorf("get user score failed %v", errors.ErrorStack(err))
 	} else {
 		log.Infof("%s/%s #%d current expected easy score %d", repo.GetOwner(), repo.GetRepo(), pull.GetNumber(), score)
@@ -259,7 +265,7 @@ func (mgr *Manager) closePull(repo *types.Repo, pull *github.PullRequest) {
 		preComment, task.GetIssueNumber(), task.GetScore())
 	seasonScore, err := mgr.mgr.GetUserSeasonScore(pull.GetUser().GetLogin(), mgr.mgr.Config.Season)
 	if err == nil {
-		comment = fmt.Sprintf("%s complete task #%d and get %d score, currerent score %d",
+		comment = fmt.Sprintf("%s complete task #%d and get %d score, current score %d",
 			preComment, task.GetIssueNumber(), task.GetScore(), seasonScore)
 	} else {
 		log.Errorf("get user score error %v", errors.ErrorStack(err))
@@ -270,16 +276,18 @@ func (mgr *Manager) closePull(repo *types.Repo, pull *github.PullRequest) {
 	if err := mgr.mgr.CloseIssue(repo.GetOwner(), repo.GetRepo(), task.GetIssueNumber(), ""); err != nil {
 		log.Errorf("close issue error %v", errors.ErrorStack(err))
 	}
-	if task.GetLevel() == "easy" {
-		if score, err := mgr.mgr.GetUserExpectedEasySeasonScore(pull.GetUser().GetLogin(), mgr.mgr.Config.Season); err != nil {
-			log.Errorf("get user score failed %v", errors.ErrorStack(err))
-		} else if score >= easyTheshould {
-			comment := fmt.Sprintf(easyTheshouldComment, seasonScore, mgr.mgr.Config.Season, score)
-			if err := mgr.mgr.CommentIssue(repo.GetOwner(), repo.GetRepo(), pull.GetNumber(), comment); err != nil {
-				log.Errorf("comment error %v", errors.ErrorStack(err))
-			}
-		}
-	}
+
+	// if task.GetLevel() == "easy" {
+	// 	if score, err := mgr.mgr.GetCombinedRepoScore(repo, pull.GetUser().GetLogin()); err != nil {
+	// 		log.Errorf("get user score failed %v", errors.ErrorStack(err))
+	// 	} else if score >= easyTheshould {
+	// 		comment := fmt.Sprintf(easyTheshouldComment, seasonScore, mgr.mgr.Config.Season, score)
+	// 		if err := mgr.mgr.CommentIssue(repo.GetOwner(), repo.GetRepo(), pull.GetNumber(), comment); err != nil {
+	// 			log.Errorf("comment error %v", errors.ErrorStack(err))
+	// 		}
+	// 	}
+	// }
+
 	// if project := mgr.mgr.Config.FindProject(repo.GetOwner(), repo.GetRepo()); project != nil {
 	// 	if err := mgr.mgr.CreateDoneCard(project, pull.GetHTMLURL()); err != nil {
 	// 		log.Errorf("create PR project card fail %v", errors.ErrorStack(err))
@@ -374,7 +382,7 @@ func (mgr *Manager) closeVectorPull(repo *types.Repo, task *types.Task, pull *gi
 		preComment, task.GetIssueNumber(), pick.GetScore())
 	seasonScore, err := mgr.mgr.GetUserSeasonScore(pull.GetUser().GetLogin(), mgr.mgr.Config.Season)
 	if err == nil {
-		comment = fmt.Sprintf("%s complete task #%d and get %d score, currerent score %d.",
+		comment = fmt.Sprintf("%s complete task #%d and get %d score, current score %d.",
 			preComment, task.GetIssueNumber(), pick.GetScore(), seasonScore)
 	} else {
 		log.Errorf("get user score error %v", errors.ErrorStack(err))
@@ -399,30 +407,55 @@ func (mgr *Manager) closeVectorPull(repo *types.Repo, task *types.Task, pull *gi
 }
 
 func (mgr *Manager) parsePullBody(repo *types.Repo, body string) (*types.Task, error) {
-	m := issueNumberPattern.FindStringSubmatch(strings.ToLower(body))
+	lowerBody := strings.ToLower(body)
+	m := issueNumberPattern.FindStringSubmatch(lowerBody)
 	if len(m) == 0 {
-		m = issueNumberWithURLPattern.FindStringSubmatch(strings.ToLower(body))
+		m = issueNumberWithURLPattern.FindStringSubmatch(lowerBody)
+	}
+	if len(m) == 0 {
+		m = issueNumberWithRepoPattern.FindStringSubmatch(lowerBody)
 	}
 	if len(m) == 0 {
 		return nil, nil
 	}
-	issueNumber, err := strconv.Atoi(m[1])
+
+	var (
+		o           string
+		r           string
+		issueNumber int
+		err         error
+	)
+
+	if len(m) == 2 {
+		o = repo.GetOwner()
+		r = repo.GetRepo()
+		issueNumber, err = strconv.Atoi(m[1])
+	}
+	if len(m) == 4 {
+		o = m[1]
+		r = m[2]
+		issueNumber, err = strconv.Atoi(m[3])
+	}
+
 	if err != nil {
 		return nil, errors.Trace(err)
+	}
+	if issueNumber == 0 {
+		return nil, nil
 	}
 
 	// hard code, maybe make improvement in the future
 	if ok, issueNumber := ifVectorIssue(repo, issueNumber); ok {
 		return &types.Task{
-			Owner:       repo.GetOwner(),
-			Repo:        repo.GetRepo(),
+			Owner:       o,
+			Repo:        r,
 			Level:       "easy",
 			IssueNumber: issueNumber,
 			Score:       vectorTaskScore,
 		}, nil
 	}
 
-	return mgr.mgr.GetTaskByNumber(repo.GetOwner(), repo.GetRepo(), issueNumber, mgr.mgr.Config.Season)
+	return mgr.mgr.GetTaskByNumber(o, r, issueNumber, mgr.mgr.Config.Season)
 }
 
 func ifVectorIssue(repo *types.Repo, issueNumber int) (bool, int) {
